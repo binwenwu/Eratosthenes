@@ -1,0 +1,20 @@
+﻿  brastBetter.cpp
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(157,14): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(157,45): warning C4244: “+=”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(172,8): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(215,14): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(215,43): warning C4244: “+=”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(236,10): warning C4477: “printf”: 格式字符串“%ld”需要类型“long”的参数，但可变参数 1 拥有了类型“__int64”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(236,10): message : 请考虑在格式字符串中使用“%lld”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(236,10): message : 请考虑在格式字符串中使用“%Id”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(236,10): message : 请考虑在格式字符串中使用“%I64d”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(237,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 3 拥有了类型“__int64”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(237,10): message : 请考虑在格式字符串中使用“%lld”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(237,10): message : 请考虑在格式字符串中使用“%Id”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(237,10): message : 请考虑在格式字符串中使用“%I64d”
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(239,42): warning C4244: “参数”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(58,16): warning C4101: “low_index”: 未引用的局部变量
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(68,6): warning C4101: “low_NewArray_index”: 未引用的局部变量
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(70,6): warning C4101: “high_NewArray_index”: 未引用的局部变量
+C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\brastBetter\brastBetter.cpp(60,16): warning C4101: “high_index”: 未引用的局部变量
+  brastBetter.vcxproj -> C:\Users\Jiaoshou\Desktop\MPI-Test\brastBetter\x64\Debug\brastBetter.exe

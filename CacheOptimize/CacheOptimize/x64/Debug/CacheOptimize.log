@@ -1,0 +1,18 @@
+﻿  CacheOptimize.cpp
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(146,30): warning C4554: “>>”: 检查运算符优先级是否存在的可能的错误；使用括号阐明优先级
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(174,14): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(174,57): warning C4244: “+=”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(187,8): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(207,16): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(236,78): warning C4244: “=”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(272,15): warning C4244: “初始化”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(272,67): warning C4244: “+=”: 从“__int64”转换到“int”，可能丢失数据
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(304,10): warning C4477: “printf”: 格式字符串“%ld”需要类型“long”的参数，但可变参数 1 拥有了类型“__int64”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(304,10): message : 请考虑在格式字符串中使用“%lld”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(304,10): message : 请考虑在格式字符串中使用“%Id”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(304,10): message : 请考虑在格式字符串中使用“%I64d”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(305,10): warning C4477: “printf”: 格式字符串“%d”需要类型“int”的参数，但可变参数 3 拥有了类型“__int64”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(305,10): message : 请考虑在格式字符串中使用“%lld”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(305,10): message : 请考虑在格式字符串中使用“%Id”
+C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\CacheOptimize\CacheOptimize.cpp(305,10): message : 请考虑在格式字符串中使用“%I64d”
+  CacheOptimize.vcxproj -> C:\Users\Jiaoshou\Desktop\Study\大三上资料\高性能地理计算\自己的大实习\《高性能地理计算》大作业\CacheOptimize\x64\Debug\CacheOptimize.exe

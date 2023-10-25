@@ -1,0 +1,306 @@
+﻿#include <mpi.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+using namespace std;
+
+/************************************************
+MPI_BCAST(buffer,count,datatype,root,comm)
+	IN/OUT　buffer　　  通信消息缓冲区的起始地址(可变)
+	IN　　　 count　  　 通信消息缓冲区中的数据个数(整型)
+	IN 　　　datatype 　通信消息缓冲区中的数据类型(句柄)
+	IN　　　 root　  　　发送广播的根的序列号(整型)
+	IN 　　　comm   　　通信子(句柄)
+int MPI_Bcast(void* buffer,int count,MPI_Datatype datatype,int root, MPI_Comm comm)
+
+MPI_BCAST是从一个序列号为root的进程将一条消息广播发送到组内的所有进程,
+包括它本身在内.调用时组内所有成员都使用同一个comm和root,
+其结果是将根的通信消息缓冲区中的消息拷贝到其他所有进程中去.
+
+规约函数 MPI_Reduce()，将通信子内各进程的同一个变量参与规约计算，并向指定的进程输出计算结果
+MPI_METHOD MPI_Reduce(
+   _In_range_(!= , recvbuf) _In_opt_ const void* sendbuf,  // 指向输入数据的指针
+   _When_(root != MPI_PROC_NULL, _Out_opt_) void* recvbuf, // 指向输出数据的指针，即计算结果存放的地方
+   _In_range_(>= , 0) int count,                           // 数据尺寸，可以进行多个标量或多个向量的规约
+   _In_ MPI_Datatype datatype,                             // 数据类型
+   _In_ MPI_Op op,                                         // 规约操作类型
+   _mpi_coll_rank_(root) int root,                         // 目标进程号，存放计算结果的进程
+   _In_ MPI_Comm comm                                      // 通信子
+);
+**********************************************/
+
+
+/***
+*
+*进行了cacheline对齐和分块提高cache hit
+*
+***/
+
+#define CACHE_SIZE 12*1024*1024  //Cache大小，在此为我的三级缓存12mB
+#define CACHELINE_SIZE 256   //CACHELINE 256B
+//#define L1_CACHE_SIZE 1048576//L1cache大小默认值，1M
+#define MIN(a, b) ((a)<(b)?(a):(b))
+
+void write_txtfile(double k, int num_pro, long long int num)
+{
+	FILE* pFile = fopen("../../../result/result_Cache_Final.txt", "a+");
+
+	if (NULL == pFile)
+	{
+		printf("error");
+		return;
+	}
+	fprintf(pFile, "Thread num:%d,Arrange:%lld, Time:%10.6f\n", num_pro, num, k);
+	fclose(pFile);
+	return;
+}
+
+int main(int argc, char* argv[]) {
+
+	//cacheline对齐
+	struct new_int
+	{
+		long long int value;
+		char emptyspace[CACHELINE_SIZE];
+	};
+
+
+	long long int count;                   /* Local prime count */
+	double elapsed_time;			       /* Parallel execution time */
+	new_int first;                         /* Index of first multiple */
+	long long int global_count;            /* Global prime count */
+	char* marked;					       /* Portion of 2,...,'n' */
+	int id;							       /* Process ID number */
+	long long int index;                   /* Index of current prime */
+	long long int low_value;               /* Lowest value on this proc */
+	long long int high_value;              /* Highest value on this proc */
+	long long int n;                       /* Sieving from 2, ..., 'n' */
+	int p;							       /* Number of processes */
+	long long int proc0_size;			   /* Size of proc 0's subarray */
+	new_int prime;			               /* Current prime */
+	long long int size;					   /* Elements in 'marked' */
+	int Size_sqrt;						   /* Elements in 'NewMarked' */
+	char* NewMarked;					   /* New array mark */
+	int low_NewArray_value;				   /* Lowest value on sqrt_array */
+	int high_NewArray_value;			   /* Highest value on sqrt_array  */
+	int count_cacheBlock;				   /* Cache_block prime count */
+	//int CACHE_size;
+	//int L1_L1_CACHE_size;
+	new_int Block_pos_first;				   /*Index of first multiple(in L3 or L2 Cache) */
+	new_int Block_pos_last;					   /* Index of last multiple(in L3 or L2 Cache) */
+	new_int Block_low_value;				   /* Lowest value on this CacheBLock(in L3 or L2 Cache) */
+	new_int Block_high_value;				   /* Highest value on this CacheBLock(in L3 or L2 Cache)*/
+	//int L1_Block_pos_first;                  /* Index of first multiple(in L1 or L2 Cache) */
+	//int L1_Block_pos_last;				   /* Index of Last multiple(in L1 or L2 Cache) */
+	//int L1_Block_high_value;			       /* Lowest value on this CacheBLock(in L1 or L2 Cache) */
+	//int L1_Block_low_value;				   /*Highest value on this CacheBLock(in L3 or L2 Cache) */
+
+	// 初始化
+	// MPI程序启动时“自动”建立两个通信器：
+	// MPI_COMM_WORLD:包含程序中所有MPI进程
+	// MPI_COMM_SELF：有单个进程独自构成，仅包含自己
+	MPI_Init(&argc, &argv);
+
+	// MPI_COMM_RANK 得到本进程的进程号，进程号取值范围为 0, …, np-1
+	MPI_Comm_rank(MPI_COMM_WORLD, &id);
+
+	// MPI_COMM_SIZE 得到所有参加运算的进程的个数
+	MPI_Comm_size(MPI_COMM_WORLD, &p);
+
+	// MPI_Barrier是MPI中的一个函数接口
+    // 表示阻止调用直到communicator中所有进程完成调用
+	MPI_Barrier(MPI_COMM_WORLD);
+
+	// MPI_WTIME返回一个用浮点数表示的秒数
+    // 它表示从过去某一时刻到调用时刻所经历的时间
+	elapsed_time = -MPI_Wtime();
+
+
+	// 参数个数为2：文件名以及问题规模n
+	if (argc != 2) {
+		if (!id) printf("Command line: %s <m> \n", argv[0]);
+		// 结束MPI系统
+		MPI_Finalize();
+		exit(1);
+	}
+	// 表示找 <= n的素数
+	n = atoi(argv[1]);
+
+
+	// Bail out if all the primes used for sieving are not all held by process 0
+	proc0_size = (n - 1) / p;
+
+	// 如果有太多进程
+	if ((2 + proc0_size) < (int)sqrt((double)n)) {
+		if (!id) printf("Too many processes \n");
+		MPI_Finalize();
+		exit(1);
+	}
+
+	/*
+	 * 广播优化（前sqrt(n)内的素数）
+	 *
+	 */
+	int sqrt_n = (int)sqrt((double)n);
+	int sqrt_N = sqrt_n - 1 >> 1;
+
+	low_NewArray_value = MIN(0, sqrt_N % p) * 2 + 3; //进程的第一个数
+	high_NewArray_value = ((sqrt_N / p) + MIN(1, sqrt_N % p)) * 2 + 1;//进程的最后一个数
+	Size_sqrt = high_NewArray_value - low_NewArray_value + 1;
+
+
+
+
+	NewMarked = (char*)malloc(sqrt_n);
+	if (NewMarked == NULL) {
+		printf("Cannot allocate enough memory \n");
+		MPI_Finalize();
+		exit(1);
+	}
+
+	// 先假定所有的整数都是素数
+	for (int i = 0; i < sqrt_n; i++)  NewMarked[i] = 0;
+
+
+	// 索引初始化为0
+	index = 0;
+	prime.value = 3;
+
+	do {
+		// 从小数组开始标只会命中第一个条件
+		first.value = (prime.value * prime.value - low_NewArray_value) >> 1;
+		// 从第一个素数开始，标记该素数的倍数为非素数
+		for (int i = first.value; i < sqrt_n; i += prime.value) {
+			NewMarked[i] = 1;
+
+		}
+		while (NewMarked[++index]);
+		prime.value = index * 2 + 3; // 起始加偏移
+	} while (prime.value * prime.value <= sqrt_n);
+
+
+
+	/*
+	 * 所有数（去偶数）
+	 */
+	int N = (n - 1) >> 1;
+	low_value = (id * (N / p) + MIN(id, N % p)) * 2 + 3; //进程的第一个数
+	high_value = ((id + 1) * (N / p) + MIN(id + 1, N % p)) * 2 + 1;//进程的最后一个数
+	size = ((high_value - low_value) >> 1) + 1;    //进程处理的数组大小
+
+
+
+
+
+
+
+	//可变缓存数据（L3orL2）
+	/*
+	*int CACHE_size = atoi(argv[2]);
+	*if (CACHE_size <= 262144) CACHE_size = CACHE_SIZE;//最小缓存为256k，小于此采用默认的1MB缓存
+	*/
+
+	int Cache_linenum_pro = CACHE_SIZE / (CACHELINE_SIZE * p);//每个进程占有的cacheline
+	int CacheBlock_size = Cache_linenum_pro * 8;//每个进程获得的用于存取long long的块大小
+	int Block_N = CacheBlock_size - 1;
+	int line_need = size / CacheBlock_size;//每个进程一共需要多少块
+	int line_rest = size % CacheBlock_size;//多出来的cacheline
+	int time_UseCache = 0;
+
+
+	// allocate this process 's share of the array
+	marked = (char*)malloc(CacheBlock_size);
+	if (marked == NULL) {
+		printf("Cannot allocate enough memory \n");
+		MPI_Finalize();
+		exit(1);
+	}
+
+	//总计数
+	count = 0;
+
+
+	while (time_UseCache <= line_need) {
+
+		//cache更新；
+		Block_pos_last.value = (time_UseCache + 1) * Block_N + MIN(time_UseCache + 1, line_rest) - 1 + (id * (N / p) + MIN(id, N % p));
+		Block_pos_first.value = time_UseCache * Block_N + MIN(time_UseCache, line_rest) + (id * (N / p) + MIN(id, N % p));
+		Block_low_value.value = Block_pos_first.value * 2 + 3;
+		if (time_UseCache == line_need) {
+			Block_high_value.value = high_value;
+			Block_pos_last.value = (id + 1) * (N / p) + MIN(id + 1, N % p) - 1;
+			CacheBlock_size = ((Block_high_value.value - Block_low_value.value) >> 1) + 1;
+		}
+		else {
+			Block_high_value.value = (Block_pos_last.value + 1) * 2 + 1;
+		}
+
+		// 索引初始化为0,只有0进程使用
+		index = 0;
+		// 从3开始搜寻，first为第一个不是素数的位置
+		prime.value = 3;
+		// 块计数
+		count_cacheBlock = 0;
+		// 先假定块中的整数都是素数
+		for (int i = 0; i < CacheBlock_size; i++) marked[i] = 0;
+
+		// 在块内找素数
+		do {
+			/*确定该进程中素数的第一个倍数的下标 */
+		   // 如果该素数n*n>low_value，n*(n-i)都被标记了
+		   // 即n*n为该进程中的第一个素数
+		   // 其下标为n*n-low_value，并且由于数组大小减半所以除以2
+			if (prime.value * prime.value > Block_low_value.value) {
+				first.value = (prime.value * prime.value - Block_low_value.value) >> 1;
+			}
+			else {
+				// 若最小值low_value为该素数的倍数
+			 // 则第一个倍数为low_value，即其下标为0
+				if (!(Block_low_value.value % prime.value)) first.value = 0;
+				// 若最小值low_value不是该素数的倍数
+				// 但是其余数为偶数，那么第一个非素数的索引为该素数剪去求余除以2
+				else if (Block_low_value.value % prime.value % 2 == 0) first.value = prime.value - ((Block_low_value.value % prime.value) >> 1);
+				// 若最小值low_value不是该素数的倍数
+				// 那么第一个倍数的下标为该素数减去余数的值，并且由于数组大小减半所以除以2
+				else first.value = (prime.value - (Block_low_value.value % prime.value)) >> 1;
+			}
+			// 从第一个素数开始，标记该素数的倍数为非素数
+			for (int i = first.value; i < CacheBlock_size; i += prime.value) {
+				marked[i] = 1;
+			}
+			// 用于找到下一素数的位置
+			while (NewMarked[++index]);
+
+
+			prime.value = index * 2 + 3;// 起始加偏移
+		} while (prime.value * prime.value <= Block_high_value.value);
+
+
+		// 统计块内计数
+		for (int i = 0; i < CacheBlock_size; i++) {
+			if (marked[i] == 0) {
+				count_cacheBlock++;
+			}
+		}
+
+		// 汇总总体计数
+		count += count_cacheBlock;
+		// 处理下一个块
+		time_UseCache++;
+	}
+
+	MPI_Reduce(&count, &global_count, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+	// stop the timer
+	elapsed_time += MPI_Wtime();
+	MPI_Finalize();
+	//if (!id) write_txtfile(elapsed_time, n, p, CACHE_size);
+
+	if (!id) {
+		printf("***************| All %ld |***************\n", n);
+		printf("***************| SIEVE(%d) |*************** \n ***************| it tastes:time: %10.6fs |***************\n***************| Find %d primes |***************\n", p, elapsed_time, global_count + 1);
+	}
+	if (!id) write_txtfile(elapsed_time, p, n);
+	return 0;
+}
